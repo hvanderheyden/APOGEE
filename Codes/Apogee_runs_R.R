@@ -1,7 +1,5 @@
 
-
-#devtools::install_github("jbisanz/qiime2R")
-library(qiime2R)
+library("qiime2R")  #devtools::install_github("jbisanz/qiime2R")
 library("phyloseq")
 library("ggplot2")     
 library("readxl")      
@@ -13,14 +11,15 @@ library("speedyseq") # install with remotes::install_github("mikemc/speedyseq")
 library("ape")
 library("ggstar")
 library("forcats")
-library(patchwork)
-library(ggpubr)
+library("patchwork")
+library("ggpubr")
 library("cowplot")
 
-setwd("/media/herve/10TB/Apogee")
 
 ## load the biom_table, taxonomy and metadata ####
-biom_spaghetti<- read.csv("/media/herve/10TB/Apogee/3_Fastq/FASTQ_runs/fastq_merged/otu_table.csv", 
+
+
+Apogee_biom<- read.csv("Data/otu_table.csv", 
                           header=TRUE, 
                           sep=",")
 head(biom_spaghetti)
