@@ -1,14 +1,12 @@
 
-library("qiime2R")  #devtools::install_github("jbisanz/qiime2R")
-library("phyloseq")
-library("ggplot2")     
+    
 library("readxl")      
-library("dplyr")
+
 library("tibble")
 library("vegan")
 library("DESeq2") # BiocManager::install("DESeq2")
 library("speedyseq") # install with remotes::install_github("mikemc/speedyseq") 
-library("ape")
+
 library("ggstar")
 library("forcats")
 library("patchwork")
@@ -19,114 +17,108 @@ library("cowplot")
 ## load the biom_table, taxonomy and metadata ####
 
 
-Apogee_biom<- read.csv("Data/otu_table.csv", 
+Apogee_biom<- read.csv("Data/runs/otu_table.csv", 
                           header=TRUE, 
                           sep=",")
-head(biom_spaghetti)
+head(Apogee_biom)
 
-taxo_spaghetti<- read.csv("/media/herve/10TB/Apogee/3_Fastq/FASTQ_runs/fastq_merged/phyloseq_taxonomy.csv", 
+
+Apogee_taxo<- read.csv("Data/runs/phyloseq_taxonomy.csv", 
                           header=TRUE, 
                           sep=",")
-head(taxo_spaghetti)
+head(Apogee_taxo)
 
-metaS <- read.csv("/media/herve/10TB/Apogee/7_pipeline_runs/Meta_full.tsv", 
+Apogee_meta <- read.csv("Data/runs/Meta_full.tsv", 
                   header=TRUE, 
                   sep="\t")
-head(metaS)
+head(Apogee_meta)
 
-metaS$DOY<-as.factor(metaS$DOY)
-metaS$Year<-as.factor(metaS$Year)
+library("dplyr")
+Apogee_meta$DOY<-as.factor(Apogee_meta$DOY)
+Apogee_meta$Year<-as.factor(Apogee_meta$Year)
 
-metaS <- metaS %>% 
+Apogee_meta <- Apogee_meta %>% 
   tibble::column_to_rownames("Sample_ID")
 
-samplesS = sample_data(metaS)
-
-
+library("phyloseq")
+samplesS = sample_data(Apogee_meta)
 
 # define the row names from the otu column ####
 
-biom_spaghetti <- biom_spaghetti %>%
+Apogee_biom <- Apogee_biom %>%
   tibble::column_to_rownames("OTU") 
 
-taxo_spaghetti <- taxo_spaghetti %>%
+Apogee_taxo <- Apogee_taxo %>%
   tibble::column_to_rownames("OTU") 
 
 # Transform into matrixes otu and tax tables (sample table can be left as data frame) ####
 
-biom_spaghetti <- as.matrix(biom_spaghetti)
-taxo_spaghetti <- as.matrix(taxo_spaghetti)
+Apogee_biom <- as.matrix(Apogee_biom)
+Apogee_taxo <- as.matrix(Apogee_taxo)
 
-class(biom_spaghetti)
-class(biom_spaghetti)
+class(Apogee_biom)
+class(Apogee_taxo)
 
 # convert to phyloseq objects ####
 
-OTU_spaghetti = otu_table(biom_spaghetti, taxa_are_rows = TRUE)
-TAX_spaghetti = phyloseq::tax_table(taxo_spaghetti)
+Apogee_OTU = otu_table(Apogee_biom, taxa_are_rows = TRUE)
+Apogee_TAX = phyloseq::tax_table(Apogee_taxo)
 
 
-phylo_spaghetti <- phyloseq(OTU_spaghetti, TAX_spaghetti, samplesS)
-phylo_spaghetti
+Apogee_PS <- phyloseq(Apogee_OTU, 
+                      Apogee_TAX, 
+                      samplesS)
+Apogee_PS
 
-sample_variables(phylo_spaghetti)
+sample_variables(Apogee_PS)
 
-
-random_tree = rtree(ntaxa(phylo_spaghetti), rooted=TRUE, tip.label=taxa_names(phylo_spaghetti))
+library("ape")
+random_tree = rtree(ntaxa(Apogee_PS), 
+                    rooted=TRUE, 
+                    tip.label=taxa_names(Apogee_PS))
 plot(random_tree)
 
-phylo_spaghetti <- phyloseq(OTU_spaghetti, TAX_spaghetti, samplesS, random_tree)
-phylo_spaghetti
-
-
-#subset the buffer vs field samples ####
-
-buffer<- subset_samples(phylo_spaghetti, SampleType =="Buffer")
-buffer
-
-
-plot_bar(buffer, fill="Phylum")
-
-field_samples <- subset_samples(phylo_spaghetti, SampleType =="Field")
-
-field_samples
-
-saveRDS(field_samples,"/media/herve/HERVE_256/Appogee/APOGEE.RDS")
-
-plot_bar(field_samples, fill="Phylum")+
-  ylim(0, 10000)
-
+Apogee_PS <- phyloseq(Apogee_OTU, 
+                            Apogee_TAX, 
+                            samplesS, 
+                            random_tree)
+Apogee_PS
 
 # filter the data to remove low depth samples #####
 
 library(microbiome) # BiocManager::install("microbiome")
 library(microbiomeutilities) #remotes::install_github("microsud/microbiomeutilities")
 
-summarize_phyloseq(field_samples)
+summarize_phyloseq(Apogee_PS)
 
-Dep1<-plot_read_distribution(field_samples, groups = "Year", 
+library("ggplot2") 
+Dep1<-plot_read_distribution(Apogee_PS, 
+                             groups = "Year", 
                              plot.type = "histogram")+
   theme_biome_utils()+
-  scale_x_continuous(trans='log10', limits = c(100, 500000))+
+  scale_x_continuous(trans='log10', 
+                     limits = c(100, 300000))+
   scale_fill_manual(values=c("#111111"))+ 
-  geom_vline(xintercept = 3000, colour = "black", linetype="dashed")+
+  geom_vline(xintercept = 3000, 
+             colour = "black", 
+             linetype="dashed")+
   theme(legend.position="none")+
   labs(x = "", y = "Count")
 
-field_samples1 <- prune_samples(sample_sums(field_samples) >= 3000, field_samples)
+Apogee_PS1 <- prune_samples(sample_sums(Apogee_PS) >= 3000, Apogee_PS)
 
-summarize_phyloseq(field_samples1)
+summarize_phyloseq(Apogee_PS1)
 
-Dep2<-plot_read_distribution(field_samples1, groups = "Year", 
+Dep2<-plot_read_distribution(Apogee_PS1, groups = "Year", 
                              plot.type = "histogram")+
   theme_biome_utils()+
-  scale_x_continuous(trans='log10', limits = c(100, 500000))+
+  scale_x_continuous(trans='log10', limits = c(100, 300000))+
   scale_fill_manual(values=c("#111111"))+ 
   geom_vline(xintercept = 3000, colour = "black", linetype="dashed")+
   theme(legend.position="none")+
   labs(x = "Reads per samples", y = "Count")
 
-
+library("cowplot")
 depth<-plot_grid(Dep1+theme(legend.position="none"),
                  Dep2+theme(legend.position="none"), 
                  align="vh",
@@ -138,14 +130,40 @@ depth<-plot_grid(Dep1+theme(legend.position="none"),
 depth_final<-plot_grid(depth, ncol = 1, rel_heights = c(0.8, .05))
 depth_final
 
-######### rarefaction 
+#subset the buffer vs field samples ####
 
-field_samplesP <- filter_taxa(field_samples1, function(x) sum(x > 0) > (0.1*length(x)), TRUE)
+Apogee_buffer<- subset_samples(Apogee_PS1, 
+                        SampleType =="Buffer")
+Apogee_buffer
 
-summarize_phyloseq(field_samplesP)
+
+plot_bar(Apogee_buffer, fill="Phylum")
+
+Apogee_field <- subset_samples(Apogee_PS1, 
+                          SampleType =="Field")
+
+Apogee_field
+
+saveRDS(field_samples,"/media/herve/HERVE_256/Appogee/APOGEE.RDS")
+
+plot_bar(Apogee_field, fill="Phylum")+
+  ylim(0, 10000)
+
+######### rarefaction #####
+
+Apogee_fieldP <- filter_taxa(Apogee_field, 
+                             function(x) sum(x > 10) > (0.05*length(x)), 
+                             TRUE)
+
+summarize_phyloseq(Apogee_fieldP)
+
+
+library("MicrobiotaProcess")
+detach(package:MicrobiotaProcess)
+
 
 set.seed(1024)
-rarecurve  <- ggrarecurve(obj=field_samplesP,
+rarecurve  <- ggrarecurve(obj=Apogee_field,
                           factorNames="Year",
                           indexNames=c("Observe", 
                                        "Chao1", 
@@ -155,10 +173,12 @@ rarecurve +
   theme(legend.spacing.y=unit(0.01,"cm"),
         legend.text=element_text(size=4))+
   xlim(0, 50000)+
-  ylim(0, 1000)
+  ylim(0, 400)
+
+
 
 field_samplesR <- rarefy_even_depth(field_samplesP, 
-                                    rngseed=123,
+                                    rngseed=1024,
                                     sample.size=3000,
                                     replace=F)
 
@@ -238,8 +258,8 @@ sample_variables(field_samplesR)
 DIEC_taxa <- get_taxadf(obj = DIEC, taxlevel=7)
 
 graph_DIEC_taxa <- ggbartax(obj = DIEC_taxa,
-                                      ,facetNames="Year"
-                                      ,topn=24)
+                                      facetNames="Year",
+                                      topn=24)
 graph_DIEC_taxa
 
 # distmethod
