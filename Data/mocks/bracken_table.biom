@@ -1,5 +1,4 @@
-# Constructed from biom file
-#OTU ID	mock2	mock3	mock4	mock5	mock
+otu	barcode02B	barcode03B	barcode04B	barcode05B	barcode01B
 87229	87573.0	102634.0	52061.0	29428.0	32206.0
 139640	81983.0	181.0	39147.0	22065.0	0.0
 40559	52937.0	62540.0	45898.0	18409.0	47238.0

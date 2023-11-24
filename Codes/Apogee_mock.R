@@ -18,16 +18,21 @@ library("forcats")
 library(patchwork)
 library(ggpubr)
 
+getwd()
+
+
 
 #######################################
 ########## Bracken ####################
 #######################################
 
 ## load the biom_table, taxonomy and metadata ####
-biom_bracken<- read.csv("C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/bracken.biom.tsv", header=TRUE, sep="\t")
+biom_bracken<- read.csv("Data/mocks/bracken_table.biom", 
+                        header=TRUE, sep="\t")
 head(biom_bracken)
 
-taxo_bracken<- read.csv("C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/bracken.taxo.csv", header=TRUE, sep=";")
+taxo_bracken<- read.csv("Data/mocks/bracken_taxo.tsv", 
+                        header=TRUE, sep="\t")
 head(taxo_bracken)
 
 # define the row names from the otu column ####
@@ -58,10 +63,12 @@ phylo_bracken
 #######################################
 
 ## load the biom_table, taxonomy and metadata ####
-biom_kracken<- read.csv("C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/kracken.biom.tsv", header=TRUE, sep="\t")
+biom_kracken<- read.csv("Data/mocks/kraken2_table.biom", 
+                        header=TRUE, sep="\t")
 head(biom_kracken)
 
-taxo_kracken<- read.csv("C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/kraken.taxo.tsv", header=TRUE, sep="\t")
+taxo_kracken<- read.csv("Data/mocks/kraken2_taxo.tsv", 
+                        header=TRUE, sep="\t")
 head(taxo_kracken)
 
 # define the row names from the otu column ####
@@ -92,48 +99,86 @@ phylo_kracken
 ######## Metontiime ##########
 ##############################
 
-phylo_metontiime <- qza_to_phyloseq(
-  features="C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/metontiime_table.qza",
-  taxonomy="C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/metontiime_taxonomy.qza"
+phylo_qiime2 <- qza_to_phyloseq(
+  features="Data/mocks/Qiime2_blast_table.qza",
+  taxonomy="Data/mocks/Qiime2_blast_taxonomy.qza"
 )
 
-sample_names(phylo_metontiime)
+sample_names(phylo_qiime2)
 
 #######################################
-########## Spaghetti ##################
+########## minimap2 ##################
 #######################################
 
 
 ## load the biom_table, taxonomy and metadata ####
-biom_spaghetti<- read.csv("C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/spaghetti_otu_table.csv", header=TRUE, sep=";")
-head(biom_spaghetti)
+biom_minimap2<- read.csv("Data/mocks/minimap2_otu_table.csv", header=TRUE, sep=";")
+head(biom_minimap2)
 
-taxo_spaghetti<- read.csv("C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/spaghetti_taxonomy.csv", header=TRUE, sep=";")
-head(taxo_spaghetti)
+taxo_minimap2<- read.csv("Data/mocks/minimap2_taxo.csv", header=TRUE, sep=";")
+head(taxo_minimap2)
 
 # define the row names from the otu column ####
 
-biom_spaghetti <- biom_spaghetti %>%
+biom_minimap2 <- biom_minimap2 %>%
   tibble::column_to_rownames("otu") 
 
-taxo_spaghetti <- taxo_spaghetti %>%
+taxo_minimap2 <- taxo_minimap2 %>%
   tibble::column_to_rownames("otu") 
 
 # Transform into matrixes otu and tax tables (sample table can be left as data frame) ####
 
-biom_spaghetti <- as.matrix(biom_spaghetti)
-taxo_spaghetti <- as.matrix(taxo_spaghetti)
+biom_minimap2 <- as.matrix(biom_minimap2)
+taxo_minimap2 <- as.matrix(taxo_minimap2)
 
-class(taxo_kracken)
-class(biom_spaghetti)
+class(taxo_minimap2)
+class(biom_minimap2)
 
 # convert to phyloseq objects ####
-OTU_spaghetti = otu_table(biom_spaghetti, taxa_are_rows = TRUE)
-TAX_spaghetti = phyloseq::tax_table(taxo_spaghetti)
+OTU_minimap2 = otu_table(biom_spaghetti, taxa_are_rows = TRUE)
+TAX_minimap2 = phyloseq::tax_table(taxo_minimap2)
 
 
-phylo_spaghetti <- phyloseq(OTU_spaghetti, TAX_spaghetti)
-phylo_spaghetti
+phylo_minimap2 <- phyloseq(OTU_minimap2, TAX_minimap2)
+phylo_minimap2
+
+###################################
+###########   Theoretical #########
+###################################
+
+## load the biom_table, taxonomy and metadata ####
+biom_theo<- read.csv("Data/mocks/theor_otu_table.csv", 
+                     header=TRUE, sep=";")
+head(biom_theo)
+
+taxo_theo<- read.csv("Data/mocks/theor_taxo.csv", 
+                     header=TRUE, sep=";")
+head(taxo_theo)
+
+# define the row names from the otu column ####
+
+biom_theo <- biom_theo %>%
+  tibble::column_to_rownames("otu") 
+
+taxo_theo <- taxo_theo %>%
+  tibble::column_to_rownames("otu") 
+
+# Transform into matrixes otu and tax tables (sample table can be left as data frame) ####
+
+biom_theo <- as.matrix(biom_theo)
+taxo_theo <- as.matrix(taxo_theo)
+
+class(taxo_theo)
+class(biom_theo)
+
+# convert to phyloseq objects ####
+OTU_theo = otu_table(biom_theo, taxa_are_rows = TRUE)
+TAX_theo = phyloseq::tax_table(taxo_theo)
+
+
+phylo_theo <- phyloseq(OTU_theo, TAX_theo)
+phylo_theo
+
 
 ###################################
 # finally merge the 5 PS objects  #
@@ -142,30 +187,40 @@ phylo_spaghetti
 # extract the tax tables from PS objects 1 to 5 
 tax1  = phyloseq::tax_table(phylo_bracken)
 tax2 = phyloseq::tax_table(phylo_kracken)
-tax3 = phyloseq::tax_table(phylo_metontiime)
-tax4  = phyloseq::tax_table(phylo_spaghetti)
+tax3 = phyloseq::tax_table(phylo_qiime2)
+tax4  = phyloseq::tax_table(phylo_minimap2)
+tax5  = phyloseq::tax_table(phylo_theo)
 
 # merge the tax tables 
-tax <- merge_phyloseq(tax1, tax2, tax3, tax4)
+tax <- merge_phyloseq(tax1, tax2, tax3, tax4, tax5)
+str(tax)
+
+head(tax)
+
+tax <- as.matrix(tax)
+
+tax = phyloseq::tax_table(tax)
 
 # extract the otu tables from PS objects 1 to 5 
-otu1  = otu_table(phylo_bracken)
+otu1 = otu_table(phylo_bracken)
 otu2 = otu_table(phylo_kracken)
-otu3 = otu_table(phylo_metontiime)
-otu4  = otu_table(phylo_spaghetti)
+otu3 = otu_table(phylo_qiime2)
+otu4  = otu_table(phylo_minimap2)
+otu5  = otu_table(phylo_theo)
+
 
 # merge the otu tables 
-otu <- merge_phyloseq(otu1, otu2, otu3, otu4)
-
+otu <- merge_phyloseq(otu1, otu2, otu3, otu4, otu5)
 
 sample_names(phylo_bracken)
 sample_names(phylo_kracken)
-sample_names(phylo_metontiime)
-rank_names(phylo_metontiime)
-sample_names(phylo_spaghetti)
+sample_names(phylo_qiime2)
+rank_names(phylo_qiime2)
+sample_names(phylo_minimap2)
 
 # concatenate the meta data into a single file and import 
-meta <- read.csv("C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/meta.csv", header=TRUE, sep=",")
+meta <- read.csv("Data/mocks/meta.csv", 
+                 header=TRUE, sep=";")
 head(meta)
 
 meta <- meta %>% 
@@ -185,10 +240,8 @@ mock
 sample_names(mock)
 rank_names(mock)
 sample_variables(mock)
-tax_table(mock)
 
-saveRDS(mock, file= "C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/mock.rds")
+saveRDS(mock, file= "R_objects/mock.rds")
 
-mock <- readRDS(file = "C:/Users/vanderheydenh/OneDrive - AGR-AGR/Projets/2023/Biovigilance/APOGEE/Apogee_mock/To_phyloseq/mock.rds")
 
 

@@ -15,13 +15,10 @@ library("cowplot")
 
 
 ## load the biom_table, taxonomy and metadata ####
-
-
 Apogee_biom<- read.csv("Data/runs/otu_table.csv", 
                           header=TRUE, 
                           sep=",")
 head(Apogee_biom)
-
 
 Apogee_taxo<- read.csv("Data/runs/phyloseq_taxonomy.csv", 
                           header=TRUE, 
@@ -76,7 +73,7 @@ library("ape")
 random_tree = rtree(ntaxa(Apogee_PS), 
                     rooted=TRUE, 
                     tip.label=taxa_names(Apogee_PS))
-plot(random_tree)
+#plot(random_tree)
 
 Apogee_PS <- phyloseq(Apogee_OTU, 
                             Apogee_TAX, 
@@ -152,7 +149,7 @@ plot_bar(Apogee_field, fill="Phylum")+
 ######### rarefaction #####
 
 Apogee_fieldP <- filter_taxa(Apogee_field, 
-                             function(x) sum(x > 10) > (0.05*length(x)), 
+                             function(x) sum(x > 10) > (0.01*length(x)), 
                              TRUE)
 
 summarize_phyloseq(Apogee_fieldP)
@@ -173,13 +170,13 @@ rarecurve +
   theme(legend.spacing.y=unit(0.01,"cm"),
         legend.text=element_text(size=4))+
   xlim(0, 50000)+
-  ylim(0, 400)
+  ylim(0, 2000)
 
 
 
-field_samplesR <- rarefy_even_depth(field_samplesP, 
+field_samplesR <- rarefy_even_depth(Apogee_fieldP, 
                                     rngseed=1024,
-                                    sample.size=3000,
+                                    sample.size=5000,
                                     replace=F)
 
 ########################Subset data ######
@@ -267,15 +264,24 @@ graph_DIEC_taxa
 
 
 
-pcoares <- get_pcoa(obj=Y2022, distmethod="bray", method="hellinger")
+pcoares <- get_pcoa(obj=field_samplesR, 
+                    distmethod="wunifrac", 
+                    method="hellinger")
 # Visulizing the result
-pcaplot1 <- ggordpoint(obj=pcoares, biplot=TRUE, speciesannot=FALSE,
-                       factorNames=c("Site"), ellipse=TRUE) 
+pcaplot1 <- ggordpoint(obj=pcoares, 
+                       biplot=FALSE, 
+                       speciesannot=FALSE,
+                       factorNames=c("DOY"), 
+                       ellipse=TRUE) 
   #scale_color_manual(values=c("#00AED7", "#FD9347")) +
   #scale_fill_manual(values=c("#00AED7", "#FD9347"))
 # pc = c(1, 3) to show the first and third principal components.
-pcaplot2 <- ggordpoint(obj=pcoares, pc=c(1, 3), biplot=TRUE, speciesannot=TRUE,
-                       factorNames=c("Site"), ellipse=TRUE)
+pcaplot2 <- ggordpoint(obj=pcoares, 
+                       pc=c(1, 3), 
+                       biplot=FALSE, 
+                       speciesannot=FALSE,
+                       factorNames=c("DOY"), 
+                       ellipse=TRUE)
   #scale_color_manual(values=c("#00AED7", "#FD9347")) +
   #scale_fill_manual(values=c("#00AED7", "#FD9347"))
 pcaplot1 | pcaplot2
@@ -283,11 +289,11 @@ pcaplot1 | pcaplot2
 
 #################### 
 set.seed(123)
-ig <- make_network(Y2022, 
-                   dist.fun="unifrac",
-                   max.dist=0.5)
+ig <- make_network(field_samplesR, 
+                   dist.fun="bray",
+                   max.dist=0.6)
 
-plot_network(ig, Y2022, 
+plot_network(ig, field_samplesR, 
              color="DOY", 
              shape="Site", 
              line_weight=0.4, 
