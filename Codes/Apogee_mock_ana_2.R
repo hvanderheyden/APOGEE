@@ -1,22 +1,4 @@
 
-library("readxl")      
-library("tibble")
-library("vegan")
-library("DESeq2") # BiocManager::install("DESeq2")
-library("speedyseq") # remotes::install_github("mikemc/speedyseq") 
-library("ape")
-library("ggstar")
-library("forcats")
-library("patchwork")
-library("ggpubr")
-library("plotROC")
-library("viridis")
-library("cowplot")
-
-library("ggtree") # BiocManager::install("ggtree")
-library("ggtreeExtra") #install.packages("ggExtra")
-library('MicrobiotaProcess') # BiocManager::install("MicrobiotaProcess")
-library("tidytree") # install.packages("tidytree")
 
 mock <- readRDS("R_objects/mock.rds")
 
