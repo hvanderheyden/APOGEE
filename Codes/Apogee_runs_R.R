@@ -102,6 +102,8 @@ Dep1<-plot_read_distribution(Apogee_PS,
   theme(legend.position="none")+
   labs(x = "", y = "Count")
 
+## you probably don't need to prune 
+
 Apogee_PS1 <- prune_samples(sample_sums(Apogee_PS) >= 3000, Apogee_PS)
 
 summarize_phyloseq(Apogee_PS1)
