@@ -1,6 +1,4 @@
 
-library("qiime2R") # devtools::install_github("jbisanz/qiime2R")
-
 library("readxl")      
 library("tibble")
 library("vegan")
@@ -20,11 +18,6 @@ library("ggtreeExtra") #install.packages("ggExtra")
 library('MicrobiotaProcess') # BiocManager::install("MicrobiotaProcess")
 library("tidytree") # install.packages("tidytree")
 
-
-colours = c("#a91919","#582630", "#e1e919", "#4DAA57",
-                     "#D55E00","#0072B2", "#F9ECCC", "#679289", "#33658A",
-                     "#F6AE2D","#00AFBB", "grey","#998540" ,"black", "purple")
-                     
 mock <- readRDS("R_objects/mock.rds")
 
 library("phyloseq")
@@ -33,6 +26,8 @@ rank_names(mock)
 
 mock <- subset_samples(mock, Name != "mock")
 mock <- subset_samples(mock, Name != "mock2")
+
+mock_dat <- psmelt(mock)
 
 predefined_species = c("Botrytis_porri",
              "Alternaria_alternata",
@@ -48,7 +43,6 @@ predefined_species = c("Botrytis_porri",
              "Hyaloperonospora_brassicae")
 
 #################################### 
-mock_dat <- psmelt(mock)
 
 library(tidyverse)
 library(ggtext)
@@ -61,6 +55,8 @@ mock_dat <- mock_dat %>%
     TRUE ~ "other"  # Replace other species with "other"
   ))
 
+
+
 otu_rel_abund <- mock_dat %>%
   group_by(Name, Description) %>%
   mutate(rel_abund = Abundance / sum(Abundance)) %>%
@@ -72,11 +68,12 @@ otu_rel_abund <- mock_dat %>%
   mutate(Description = factor(Description, 
                               levels=c("Theoretical", "Minimap2", "Bracken", "Kraken", "Qiime2")))
 
-str(otu_rel_abund)
+
+
 
 ###################################
 
-otu_rel_abund %>%
+mock_abund<-otu_rel_abund %>%
   filter(level=="Species") %>%
   group_by(Name, Description, taxon) %>%
   summarize(rel_abund = sum(rel_abund), .groups="drop") %>%
@@ -96,9 +93,18 @@ otu_rel_abund %>%
                                        "Botrytis squamosa",
                                        "Fusarium oxysporum",
                                        "Hyaloperonospora brassicae",
-                                       "Other"))
-         ) %>% 
-  ggplot(aes(x=Description, y=mean_rel_abund, fill=taxon)) +
+                                       "Other")))
+
+summary <- mock_abund %>% 
+  group_by(Name, Description, taxon) %>%
+  summarize(mean_rel_abund) %>% 
+pivot_wider(names_from = Description, values_from = mean_rel_abund)
+
+
+  ggplot(data=mock_abund, 
+         aes(x=Description, 
+             y=mean_rel_abund, 
+             fill=taxon)) +
   geom_col() +
   facet_wrap(vars(Name), nrow = 2)+
   theme(legend.title=element_blank())+
@@ -106,13 +112,18 @@ otu_rel_abund %>%
        y="Mean Relative Abundance (%)") +
   theme(legend.text = element_text(face="italic"))+
   scale_y_continuous(expand=c(0,0))+
-  scale_fill_manual(values=colours)+
+  scale_fill_manual(values=c("#a91919","#582630","#998540","black",
+                             "#D55E00","#0072B2","#F9ECCC","#679289", 
+                             "#33658A","#F6AE2D","#00AFBB","grey"))+
   theme(legend.position="right")+
   guides(fill= guide_legend(keywidth = 0.6, 
                             keyheight = 0.7, 
                             ncol=1))+
-  theme(legend.position = c(1, 0),
-        legend.justification = c(1, 0))+
+  theme(legend.position = c(0.9, -0.05),
+        legend.justification = c(0.9, -0.05))+
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=0.4))
 
+  
+  
+  
                      
