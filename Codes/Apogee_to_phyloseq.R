@@ -257,12 +257,24 @@ mock_raw <- merge_phyloseq(otu, tax, samples)
 
 mock_raw
 
+#create and merge 
+library("ape")
+random_tree_mock = rtree(ntaxa(mock_raw), 
+                    rooted=TRUE, 
+                    tip.label=taxa_names(mock_raw))
+
+mock_raw <- phyloseq(otu, 
+                           tax, 
+                           samples, 
+                           random_tree_mock)
+mock_raw
+
 # inspect your  phyloseq object: 
 sample_names(mock_raw)
 rank_names(mock_raw)
 sample_variables(mock_raw)
 
-saveRDS(mock, file= "R_objects/mock_raw.rds")
+saveRDS(mock_raw, file= "R_objects/mock_raw.rds")
 
 #######################################################################
 ############## build the phyloseq object for the runs #################

@@ -1,54 +1,28 @@
 
-# to do ##
-# remove mock and mock2 from the raw data
-# merge the run and mock object prior to analyses
-# trim taxa, remove samples with low read counts and rarefy the combined dataset
-
-
 
 library("phyloseq")
 
-mock <- readRDS("R_objects/mock.rds")
+# Load the .rds object 
 
-sample_variables(mock)
-rank_names(mock)
+mock <- readRDS("R_objects/mock_RF.rds")
 
-mock <- subset_samples(mock, Name != "mock")
-mock <- subset_samples(mock, Name != "mock2")
-
-library("microbiome")
-summarize_phyloseq(mock)
-
-library("MicrobiotaProcess")
-
-mockR = rarefy_even_depth(mock, 
-                          rngseed=1024, 
-                          replace=F)
-
-summarize_phyloseq(mockR)
-
-mockRF=prune_taxa(taxa_sums(mockR) > 09, mockR); mockRF
-
-summarize_phyloseq(mockRF)
-
-#
 ################################################
-mock_dat <- psmelt(mockRF)
+mock_dat <- psmelt(mock)
 
 str(mock_dat)
 
-predefined_species = c("Botrytis_porri",
-             "Alternaria_alternata",
-             "Botrytis_cinerea",
-             "Peronospora_variabilis",
-             "Epicoccum_nigrum",
-             "Stemphylium_vesicarium",
-             "Peronospora_destructor",
-             "Sclerotinia_sclerotiorum",
-             "Alternaria_brassicicola",
-             "Botrytis_squamosa",
-             "Fusarium_oxysporum",
-             "Hyaloperonospora_brassicae")
+predefined_species = c("Botrytis porri",
+             "Alternaria alternata",
+             "Botrytis cinerea",
+             "Peronospora variabilis",
+             "Epicoccum nigrum",
+             "Stemphylium vesicarium",
+             "Peronospora destructor",
+             "Sclerotinia sclerotiorum",
+             "Alternaria brassicicola",
+             "Botrytis squamosa",
+             "Fusarium oxysporum",
+             "Hyaloperonospora brassicae")
 
 #################################### 
 
@@ -62,8 +36,6 @@ mock_dat <- mock_dat %>%
       predefined_species ~ Species,  # Keep valid species as is
     TRUE ~ "other"  # Replace other species with "other"
   ))
-
-
 
 otu_rel_abund <- mock_dat %>%
   group_by(Name, Description) %>%
@@ -85,7 +57,6 @@ mock_abund<-otu_rel_abund %>%
   summarize(rel_abund = sum(rel_abund), .groups="drop") %>%
   group_by(Name, Description, taxon) %>%
   summarize(mean_rel_abund = 100*mean(rel_abund), .groups="drop") %>%
-  mutate(taxon=str_replace(taxon, "_", " ")) %>%
   mutate(taxon = factor(taxon, 
                               levels=c("Botrytis cinerea",
                                        "Botrytis porri",
@@ -106,9 +77,11 @@ summary <- mock_abund %>%
   summarize(mean_rel_abund) %>% 
 pivot_wider(names_from = Description, values_from = mean_rel_abund)
 
+
 write.csv(summary, "Data/mocks/summary_mock.csv", row.names=FALSE)
 
 
+# plot the stacked bar chart 
 mock_stacked<-ggplot(data=mock_abund, 
          aes(x=Description, 
              y=mean_rel_abund, 
@@ -133,17 +106,16 @@ mock_stacked<-ggplot(data=mock_abund,
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=0.4))
 
 
-dat_text <- data.frame(label = c("A", "B", "C"))
-
+dat_text <- data.frame(Description=c("mock3", "mock4", "mock5"), 
+                       label = c("A", "B", "C"))
+                      
 mock_stacked +
-  geom_text(
-  data    = dat_text,
-  mapping = aes(x = -Inf, y = -Inf, label = label),
-  hjust   = -0.1,
-  vjust   = -1
-)
+  geom_text(x = 6, y = 40, aes(label = label), data = dat_text)
+
 
   ################################################
+
+
 
 library(MicrobiotaProcess)
   
