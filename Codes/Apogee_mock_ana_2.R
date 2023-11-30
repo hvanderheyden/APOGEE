@@ -1,15 +1,34 @@
 
+library("phyloseq")
 
 mock <- readRDS("R_objects/mock.rds")
 
-library("phyloseq")
 sample_variables(mock)
 rank_names(mock)
 
 mock <- subset_samples(mock, Name != "mock")
 mock <- subset_samples(mock, Name != "mock2")
 
-mock_dat <- psmelt(mock)
+library("microbiome")
+summarize_phyloseq(mock)
+
+library("MicrobiotaProcess")
+
+mockR = rarefy_even_depth(mock, 
+                          rngseed=1024, 
+                          replace=F)
+
+summarize_phyloseq(mockR)
+
+mockRF=prune_taxa(taxa_sums(mockR) > 19, mockR); mockRF
+
+summarize_phyloseq(mockRF)
+
+#
+################################################
+mock_dat <- psmelt(mockRF)
+
+str(mock_dat)
 
 predefined_species = c("Botrytis_porri",
              "Alternaria_alternata",
@@ -51,8 +70,6 @@ otu_rel_abund <- mock_dat %>%
                               levels=c("Theoretical", "Minimap2", "Bracken", "Kraken", "Qiime2")))
 
 
-
-
 ###################################
 
 mock_abund<-otu_rel_abund %>%
@@ -82,18 +99,21 @@ summary <- mock_abund %>%
   summarize(mean_rel_abund) %>% 
 pivot_wider(names_from = Description, values_from = mean_rel_abund)
 
+write.csv(summary, "Data/mocks/summary_mock.csv", row.names=FALSE)
 
-  ggplot(data=mock_abund, 
+
+mock_stacked<-ggplot(data=mock_abund, 
          aes(x=Description, 
              y=mean_rel_abund, 
              fill=taxon)) +
   geom_col() +
   facet_wrap(vars(Name), nrow = 2)+
+  theme(strip.text = element_blank())+
   theme(legend.title=element_blank())+
   labs(x=NULL,
        y="Mean Relative Abundance (%)") +
   theme(legend.text = element_text(face="italic"))+
-  scale_y_continuous(expand=c(0,0))+
+  scale_y_continuous(expand=c(0,10))+
   scale_fill_manual(values=c("#a91919","#582630","#998540","black",
                              "#D55E00","#0072B2","#F9ECCC","#679289", 
                              "#33658A","#F6AE2D","#00AFBB","grey"))+
@@ -105,7 +125,32 @@ pivot_wider(names_from = Description, values_from = mean_rel_abund)
         legend.justification = c(0.9, -0.05))+
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=0.4))
 
+
+dat_text <- data.frame(label = c("A", "B", "C"))
+
+mock_stacked +
+  geom_text(
+  data    = dat_text,
+  mapping = aes(x = -Inf, y = -Inf, label = label),
+  hjust   = -0.1,
+  vjust   = -1
+)
+
+
+
+  ################################################
+
+library(MicrobiotaProcess)
+  
+  mock3<- subset_samples(mockRF, 
+                         Name =="mock3")
+  
+  distmeDF <- get_dist(mock3, 
+                       distmethod ="wunifrac")
+  distmeDF
+
   
   
   
+    
                      
