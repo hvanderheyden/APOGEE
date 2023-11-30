@@ -1,4 +1,11 @@
 
+# to do ##
+# remove mock and mock2 from the raw data
+# merge the run and mock object prior to analyses
+# trim taxa, remove samples with low read counts and rarefy the combined dataset
+
+
+
 library("phyloseq")
 
 mock <- readRDS("R_objects/mock.rds")
@@ -20,7 +27,7 @@ mockR = rarefy_even_depth(mock,
 
 summarize_phyloseq(mockR)
 
-mockRF=prune_taxa(taxa_sums(mockR) > 19, mockR); mockRF
+mockRF=prune_taxa(taxa_sums(mockR) > 09, mockR); mockRF
 
 summarize_phyloseq(mockRF)
 
@@ -136,21 +143,25 @@ mock_stacked +
   vjust   = -1
 )
 
-
-
   ################################################
 
 library(MicrobiotaProcess)
   
-  mock3<- subset_samples(mockRF, 
-                         Name =="mock3")
+  mock3<- subset_samples(mockRF, Name =="mock3")
   
-  distmeDF <- get_dist(mock3, 
-                       distmethod ="wunifrac")
-  distmeDF
+  distm3 <- get_dist(mock3, distmethod ="wunifrac")
+
+  mock4<- subset_samples(mockRF,Name =="mock4")
+  
+  distmem4 <- get_dist(mock4, distmethod ="wunifrac")
+  
+  mock5<- subset_samples(mockRF,Name =="mock5")
+  
+  distmem5 <- get_dist(mock5, distmethod ="wunifrac")
 
   
-  
-  
+  distm3
+  distmem4
+  distmem5
     
                      
