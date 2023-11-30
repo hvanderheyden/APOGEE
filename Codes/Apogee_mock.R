@@ -20,8 +20,6 @@ library(ggpubr)
 
 getwd()
 
-
-
 #######################################
 ########## Bracken ####################
 #######################################
@@ -96,15 +94,41 @@ phylo_kracken <- phyloseq(OTU_kracken, TAX_kracken)
 phylo_kracken
 
 ##############################
-######## Metontiime ##########
+######## Qiime2 ##########
 ##############################
 
-phylo_qiime2 <- qza_to_phyloseq(
-  features="Data/mocks/Qiime2_blast_table.qza",
-  taxonomy="Data/mocks/Qiime2_blast_taxonomy.qza"
-)
+## load the biom_table, taxonomy and metadata ####
+biom_qiime2<- read.csv("Data/mocks/Qiime2_vsearch_table.txt", 
+                     header=TRUE, sep="\t")
+head(biom_qiime2)
 
-sample_names(phylo_qiime2)
+taxo_qiime2<- read.csv("Data/mocks/Qiime2_vsearch_taxonomy.tsv", 
+                     header=TRUE, sep="\t")
+head(taxo_qiime2)
+
+# define the row names from the otu column ####
+
+biom_qiime2 <- biom_qiime2 %>%
+  tibble::column_to_rownames("otu") 
+
+taxo_qiime2 <- taxo_qiime2 %>%
+  tibble::column_to_rownames("otu") 
+
+# Transform into matrixes otu and tax tables (sample table can be left as data frame) ####
+
+biom_qiime2 <- as.matrix(biom_qiime2)
+taxo_qiime2 <- as.matrix(taxo_qiime2)
+
+class(taxo_qiime2)
+class(biom_qiime2)
+
+# convert to phyloseq objects ####
+OTU_qiime2 = otu_table(biom_qiime2, taxa_are_rows = TRUE)
+TAX_qiime2 = phyloseq::tax_table(taxo_qiime2)
+
+
+phylo_qiime2 <- phyloseq(OTU_qiime2, TAX_qiime2)
+phylo_qiime2
 
 #######################################
 ########## minimap2 ##################
@@ -135,7 +159,7 @@ class(taxo_minimap2)
 class(biom_minimap2)
 
 # convert to phyloseq objects ####
-OTU_minimap2 = otu_table(biom_spaghetti, taxa_are_rows = TRUE)
+OTU_minimap2 = otu_table(biom_minimap2, taxa_are_rows = TRUE)
 TAX_minimap2 = phyloseq::tax_table(taxo_minimap2)
 
 
