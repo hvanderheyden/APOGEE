@@ -1,7 +1,6 @@
 
 library("phyloseq")
-
-
+library("microbiomeutilities")
 
 ###############################################################
 ########## preprocessing for the mock experiments #############
@@ -27,7 +26,7 @@ for (i in 1:7){ tax.cleanM[,i] <- as.character(tax.cleanM[,i])}
 tax.cleanM<-tax.cleanM %>% 
 mutate(Species=str_replace(Species, "_", " "))
 
-phyloseq::tax_table(mock_raw) <- as.matrix(tax.cleanM) ; tax_table(mock_raw)
+phyloseq::tax_table(mock_raw) <- as.matrix(tax.cleanM) ; phyloseq::tax_table(mock_raw)
 
 library("MicrobiotaProcess")
 
@@ -36,14 +35,11 @@ library("MicrobiotaProcess")
 mockR = rarefy_even_depth(mock_raw, 
                                rngseed=1024, 
                                replace=FALSE)
-summarize_phyloseq(mockR)
 
 # Because singletons still remains after rarefaction, taxa not supported with 
 # at least 10 ASVs, were removed from the final "mock" object. 
 
 mockRF = prune_taxa(taxa_sums(mockR) > 09, mockR); mockRF
-
-summarize_phyloseq(mockRF)
 
 saveRDS(mockRF, "R_objects/mock_RF.rds")
 
@@ -69,7 +65,7 @@ for (i in 1:7){ tax.cleanR[,i] <- as.character(tax.cleanR[,i])}
 tax.cleanR<-tax.cleanR %>% 
   mutate(Species=str_replace(Species, "_", " "))
 
-tax_table(Runs_raw) <- as.matrix(tax.cleanR) ; tax_table(Runs_raw)
+phyloseq::tax_table(Runs_raw) <- as.matrix(tax.cleanR) ; phyloseq::tax_table(Runs_raw)
 
 
 # plot depth 

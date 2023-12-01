@@ -60,16 +60,16 @@ mock_abund<-otu_rel_abund %>%
   mutate(taxon = factor(taxon, 
                               levels=c("Botrytis cinerea",
                                        "Botrytis porri",
+                                       "Botrytis squamosa",
+                                       "Sclerotinia sclerotiorum",
                                        "Alternaria alternata",
+                                       "Alternaria brassicicola",
                                        "Peronospora variabilis",
+                                       "Peronospora destructor",
+                                       "Hyaloperonospora brassicae",
                                        "Epicoccum nigrum",
                                        "Stemphylium vesicarium",
-                                       "Peronospora destructor",
-                                       "Sclerotinia sclerotiorum",
-                                       "Alternaria brassicicola",
-                                       "Botrytis squamosa",
                                        "Fusarium oxysporum",
-                                       "Hyaloperonospora brassicae",
                                        "Other")))
 
 summary <- mock_abund %>% 
@@ -88,52 +88,58 @@ mock_stacked<-ggplot(data=mock_abund,
              fill=taxon)) +
   geom_col() +
   facet_wrap(vars(Name), nrow = 2)+
-  theme(strip.text = element_blank())+
+  #theme(strip.text = element_blank())+
   theme(legend.title=element_blank())+
   labs(x=NULL,
-       y="Mean Relative Abundance (%)") +
+       y="Relative Abundance (%)") +
   theme(legend.text = element_text(face="italic"))+
-  scale_y_continuous(expand=c(0,10))+
-  scale_fill_manual(values=c("#a91919","#582630","#998540","black",
-                             "#D55E00","#0072B2","#F9ECCC","#679289", 
-                             "#33658A","#F6AE2D","#00AFBB","grey"))+
+  scale_y_continuous(expand=c(0,0))+
+  scale_fill_manual(values=c(
+    "#8dd3c7",
+    "#ffffb3",
+    "#bebada",
+    "#fb8072",
+    "#80b1d3",
+    "#fdb462",
+    "#b3de69",
+    "#fccde5",
+    "#d9d9d9",
+    "#bc80bd",
+    "#ccebc5",
+    "#ffed6f"))+
   theme(legend.position="right")+
   guides(fill= guide_legend(keywidth = 0.6, 
                             keyheight = 0.7, 
                             ncol=1))+
   theme(legend.position = c(0.9, -0.05),
         legend.justification = c(0.9, -0.05))+
-  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=0.4))
+  theme(axis.text.x = element_text(angle = 60, 
+                                   vjust = 0.5, 
+                                   hjust=0.4));mock_stacked
 
 
-dat_text <- data.frame(Description=c("mock3", "mock4", "mock5"), 
-                       label = c("A", "B", "C"))
-                      
-mock_stacked +
-  geom_text(x = 6, y = 40, aes(label = label), data = dat_text)
 
+################################################
 
-  ################################################
-
-
+# estimate weighted unifrac distance (dissimilarity)
 
 library(MicrobiotaProcess)
   
-  mock3<- subset_samples(mockRF, Name =="mock3")
+  mock1<- subset_samples(mock, Name =="mock")
+  
+  distm <- get_dist(mock1, distmethod ="wunifrac")
+
+  mock2<- subset_samples(mock, Name =="mock2")
+  
+  distm2 <- get_dist(mock2, distmethod ="wunifrac")
+  
+  mock3<- subset_samples(mock,Name =="mock3")
   
   distm3 <- get_dist(mock3, distmethod ="wunifrac")
 
-  mock4<- subset_samples(mockRF,Name =="mock4")
   
-  distmem4 <- get_dist(mock4, distmethod ="wunifrac")
-  
-  mock5<- subset_samples(mockRF,Name =="mock5")
-  
-  distmem5 <- get_dist(mock5, distmethod ="wunifrac")
-
-  
+  distm
+  distm2
   distm3
-  distmem4
-  distmem5
     
                      
