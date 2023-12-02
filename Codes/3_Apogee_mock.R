@@ -80,13 +80,26 @@ pivot_wider(names_from = Description, values_from = mean_rel_abund)
 
 write.csv(summary, "Data/mocks/summary_mock.csv", row.names=FALSE)
 
+my_cols<- c(  
+"#8dd3c7",
+"#ffffb3",
+"#bebada",
+"#fb8072",
+"#80b1d3",
+"#fdb462",
+"#b3de69",
+"#fccde5",
+"#d9d9d9",
+"#bc80bd",
+"#ccebc5",
+"#ffed6f")
 
 # plot the stacked bar chart 
 mock_stacked<-ggplot(data=mock_abund, 
          aes(x=Description, 
              y=mean_rel_abund, 
              fill=taxon)) +
-  geom_col() +
+  geom_col(colour = "black", width=0.8, linewidth=0.1) +
   facet_wrap(vars(Name), nrow = 2)+
   #theme(strip.text = element_blank())+
   theme(legend.title=element_blank())+
@@ -94,19 +107,7 @@ mock_stacked<-ggplot(data=mock_abund,
        y="Relative Abundance (%)") +
   theme(legend.text = element_text(face="italic"))+
   scale_y_continuous(expand=c(0,0))+
-  scale_fill_manual(values=c(
-    "#8dd3c7",
-    "#ffffb3",
-    "#bebada",
-    "#fb8072",
-    "#80b1d3",
-    "#fdb462",
-    "#b3de69",
-    "#fccde5",
-    "#d9d9d9",
-    "#bc80bd",
-    "#ccebc5",
-    "#ffed6f"))+
+  scale_fill_manual(values=my_cols)+
   theme(legend.position="right")+
   guides(fill= guide_legend(keywidth = 0.6, 
                             keyheight = 0.7, 
@@ -118,6 +119,7 @@ mock_stacked<-ggplot(data=mock_abund,
                                    hjust=0.4));mock_stacked
 
 
+ggsave(file="Figures/Fig2_mock.pdf", width=6, height=6, units="in", dpi=900)
 
 ################################################
 
