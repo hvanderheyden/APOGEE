@@ -14,290 +14,153 @@ library("ggpubr")
 library("cowplot")
 
 
-## load the biom_table, taxonomy and metadata ####
-Apogee_biom<- read.csv("Data/runs/otu_table.csv", 
-                          header=TRUE, 
-                          sep=",")
-head(Apogee_biom)
+my_cols<- c(  
+           "#8dd3c7",
+           "#ffed6f",         
+           "#80b1d3",
+           "#bebada",
+           "#920000",
+           "#fb8072",
+           "#004949",
+           "#fdb462",
+           "#b3de69",
+           "#fccde5",
+           "#d9d9d9",
+           "#bc80bd",
+           "#ccebc5",
+           "#ffffb3", 
+           "#490092",
+           "#009209",
+           "#006ddb",
+           "#000000"
+)
 
-Apogee_taxo<- read.csv("Data/runs/phyloseq_taxonomy.csv", 
-                          header=TRUE, 
-                          sep=",")
-head(Apogee_taxo)
+Runs_PRF <- readRDS("R_objects/Runs_PRF.rds");Runs_PRF
 
-Apogee_meta <- read.csv("Data/runs/Meta_full.tsv", 
-                  header=TRUE, 
-                  sep="\t")
-head(Apogee_meta)
+##################################################################
+# compute and plot stacked bar charts to sumarize by Week/Year####
+##################################################################
+
+
+Runs_PRF_dat <- psmelt(Runs_PRF)
+
+Runs_PRF_dat$Month <- as_factor(Runs_PRF_dat$Month)
+Runs_PRF_dat$Week <- as_factor(Runs_PRF_dat$Week)
+
+
+str(Runs_PRF_dat)
+
+predefined_species = c("Alternaria alternata",
+                       "Botrytis cinerea",
+                       "Botrytis squamosa",
+                       "Botrytis porrii",
+                       "Blumeria graminis",
+                       "Cladosporium aphidis",
+                       "Cladosporium herbarum",
+                       "Epicoccum nigrum",
+                       "Ganoderma destructans",
+                       "Hyaloperonospora camelinae",
+                       "Neoascochyta europaea",
+                       "Neosetophoma guiyangensis",
+                       "Peniophora tamaricicola",
+                       "Peronospora destructor",
+                       "Pseudopithomyces rosae",
+                       "Rhodotorula babjevae",
+                       "Rhodotorula diobovata",
+                       "Stemphylium solani",
+                       "Stemphylium vesicarium"
+                       );predefined_species
+
+#################################### 
+
+library("tidyverse")
+library("ggtext")
 
 library("dplyr")
-Apogee_meta$DOY<-as.factor(Apogee_meta$DOY)
-Apogee_meta$Year<-as.factor(Apogee_meta$Year)
 
-Apogee_meta <- Apogee_meta %>% 
-  tibble::column_to_rownames("Sample_ID")
+Runs_PRF_dat2 <-  Runs_PRF_dat %>%
+  mutate(Species = case_when(
+    Species %in% 
+      predefined_species ~ Species,  # Keep valid species as is
+    TRUE ~ "other"  # Replace other species with "other"
+  ));Runs_PRF_dat2
+
+tail(Runs_PRF_dat2)
+head(Runs_PRF_dat2)
+
+otu_rel_abund <- Runs_PRF_dat2 %>%
+  group_by(Year, Week, Site) %>%
+  mutate(rel_abund = Abundance / sum(Abundance)) %>%
+  ungroup() %>%
+  select(-Abundance) %>%
+  pivot_longer(c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"),
+               names_to="level",
+               values_to="taxon")
+
+otu_rel_abund$taxon
+
+###################################
+
+ run_abund<-otu_rel_abund %>%
+  filter(level=="Species") %>%
+  group_by(Year, Week, Site, taxon) %>%
+  summarize(rel_abund = sum(rel_abund), .groups="drop") %>%
+  group_by(Year, Week, Site, taxon) %>%
+  summarize(mean_rel_abund = 100*mean(rel_abund), .groups="drop") %>%
+  mutate(taxon = factor(taxon, 
+                        levels=c("Stemphylium vesicarium",
+                                 "Cladosporium herbarum",
+                                 "Alternaria alternata",
+                                 "Epicoccum nigrum",
+                                 "Peronospora destructor",
+                                 "Botrytis cinerea",
+                                 "Botrytis squamosa",
+                                 "Botrytis porrii",
+                                 "Blumeria graminis",
+                                 "Cladosporium aphidis",
+                                 "Ganoderma destructans",
+                                 "Hyaloperonospora camelinae",
+                                 "Neoascochyta europaea",
+                                 "Neosetophoma guiyangensis",
+                                 "Peniophora tamaricicola",
+                                 "Pseudopithomyces rosae",
+                                 "Rhodotorula babjevae",
+                                 "Rhodotorula diobovata",
+                                 "Stemphylium solani",
+                                 "Other")))%>%
+           mutate(Week = factor(Week, 
+                                 levels=c("23", "24", "25", "26",
+                                          "27", "28", "29", "30",
+                                          "31", "32", "33", "34")))
+
+
+# plot the stacked bar chart 
+run_stacked<-ggplot(data=run_abund, 
+                     aes(x=Week, 
+                         y=mean_rel_abund, 
+                         fill=taxon)) +
+  geom_col(colour = "black", width=0.8, linewidth=0.1) +
+  facet_wrap(vars(Year, Site), nrow = 4)+
+  theme(legend.title=element_blank())+
+  labs(x="Week number",
+       y="Relative Abundance (%)") +
+  theme(legend.text = element_text(face="italic"))+
+  scale_y_continuous(expand=c(0,0))+
+  scale_fill_manual(values=my_cols)+
+  theme(legend.position="bottom")+
+  guides(fill= guide_legend(keywidth = 0.6, 
+                            keyheight = 0.7, 
+                            ncol=4))+
+  theme(axis.text.x = element_text(angle = 60, 
+                                   vjust = 0.5, 
+                                   hjust=0.4));run_stacked
+
+ggsave(file="Figures/Fig3_Run_stacked.pdf", width=6, height=6, units="in", dpi=900)
 
-library("phyloseq")
-samplesS = sample_data(Apogee_meta)
 
-# define the row names from the otu column ####
 
-Apogee_biom <- Apogee_biom %>%
-  tibble::column_to_rownames("OTU") 
 
-Apogee_taxo <- Apogee_taxo %>%
-  tibble::column_to_rownames("OTU") 
 
-# Transform into matrixes otu and tax tables (sample table can be left as data frame) ####
 
-Apogee_biom <- as.matrix(Apogee_biom)
-Apogee_taxo <- as.matrix(Apogee_taxo)
 
-class(Apogee_biom)
-class(Apogee_taxo)
-
-# convert to phyloseq objects ####
-
-Apogee_OTU = otu_table(Apogee_biom, taxa_are_rows = TRUE)
-Apogee_TAX = phyloseq::tax_table(Apogee_taxo)
-
-
-Apogee_PS <- phyloseq(Apogee_OTU, 
-                      Apogee_TAX, 
-                      samplesS)
-Apogee_PS
-
-sample_variables(Apogee_PS)
-
-library("ape")
-random_tree = rtree(ntaxa(Apogee_PS), 
-                    rooted=TRUE, 
-                    tip.label=taxa_names(Apogee_PS))
-#plot(random_tree)
-
-Apogee_PS <- phyloseq(Apogee_OTU, 
-                            Apogee_TAX, 
-                            samplesS, 
-                            random_tree)
-Apogee_PS
-
-# filter the data to remove low depth samples #####
-
-library(microbiome) # BiocManager::install("microbiome")
-library(microbiomeutilities) #remotes::install_github("microsud/microbiomeutilities")
-
-summarize_phyloseq(Apogee_PS)
-
-library("ggplot2") 
-Dep1<-plot_read_distribution(Apogee_PS, 
-                             groups = "Year", 
-                             plot.type = "histogram")+
-  theme_biome_utils()+
-  scale_x_continuous(trans='log10', 
-                     limits = c(100, 300000))+
-  scale_fill_manual(values=c("#111111"))+ 
-  geom_vline(xintercept = 3000, 
-             colour = "black", 
-             linetype="dashed")+
-  theme(legend.position="none")+
-  labs(x = "", y = "Count")
-
-## you probably don't need to prune 
-
-Apogee_PS1 <- prune_samples(sample_sums(Apogee_PS) >= 3000, Apogee_PS)
-
-summarize_phyloseq(Apogee_PS1)
-
-Dep2<-plot_read_distribution(Apogee_PS1, groups = "Year", 
-                             plot.type = "histogram")+
-  theme_biome_utils()+
-  scale_x_continuous(trans='log10', limits = c(100, 300000))+
-  scale_fill_manual(values=c("#111111"))+ 
-  geom_vline(xintercept = 3000, colour = "black", linetype="dashed")+
-  theme(legend.position="none")+
-  labs(x = "Reads per samples", y = "Count")
-
-library("cowplot")
-depth<-plot_grid(Dep1+theme(legend.position="none"),
-                 Dep2+theme(legend.position="none"), 
-                 align="vh",
-                 labels = c("A", "B"),
-                 hjust = -1,
-                 vjust= 2,
-                 nrow = 2)
-
-depth_final<-plot_grid(depth, ncol = 1, rel_heights = c(0.8, .05))
-depth_final
-
-#subset the buffer vs field samples ####
-
-Apogee_buffer<- subset_samples(Apogee_PS1, 
-                        SampleType =="Buffer")
-Apogee_buffer
-
-
-plot_bar(Apogee_buffer, fill="Phylum")
-
-Apogee_field <- subset_samples(Apogee_PS1, 
-                          SampleType =="Field")
-
-Apogee_field
-
-saveRDS(field_samples,"/media/herve/HERVE_256/Appogee/APOGEE.RDS")
-
-plot_bar(Apogee_field, fill="Phylum")+
-  ylim(0, 10000)
-
-######### rarefaction #####
-
-Apogee_fieldP <- filter_taxa(Apogee_field, 
-                             function(x) sum(x > 10) > (0.01*length(x)), 
-                             TRUE)
-
-summarize_phyloseq(Apogee_fieldP)
-
-
-library("MicrobiotaProcess")
-detach(package:MicrobiotaProcess)
-
-
-set.seed(1024)
-rarecurve  <- ggrarecurve(obj=Apogee_field,
-                          factorNames="Year",
-                          indexNames=c("Observe", 
-                                       "Chao1", 
-                                       "ACE")) 
-
-rarecurve +
-  theme(legend.spacing.y=unit(0.01,"cm"),
-        legend.text=element_text(size=4))+
-  xlim(0, 50000)+
-  ylim(0, 2000)
-
-
-
-field_samplesR <- rarefy_even_depth(Apogee_fieldP, 
-                                    rngseed=1024,
-                                    sample.size=5000,
-                                    replace=F)
-
-########################Subset data ######
-
-Y2021 <- subset_samples(field_samplesR, Year =="2021")
-Y2021
-
-Y2022 <- subset_samples(field_samplesR, Year =="2022")
-Y2022
-
-DIEC <- subset_samples(field_samplesR, Site =="DIEC")
-DIEC
-
-rank_names(field_samplesR)
-
-oom <- subset_taxa(field_samplesR, Phylum=="p__Oomycota")
-oom
-
-O2021 <- subset_samples(oom, Year =="2021")
-O2021
-
-O2022 <- subset_samples(oom, Year =="2022")
-O2022
-
-
-O2021_taxa <- get_taxadf(obj = O2021, taxlevel=7)
-
-graph_O2021_taxa <- ggbartax(obj = O2021_taxa,
-                           facetNames=factor("Site"),
-                           topn=24)+
-  theme(axis.text.x = element_text(angle = 90))
-graph_O2021_taxa
-
-O2022_taxa <- get_taxadf(obj = O2022, taxlevel=7)
-
-graph_O2022_taxa <- ggbartax(obj = O2022_taxa,
-                             facetNames=factor("Site"),
-                             topn=12)+
-  theme(axis.text.x = element_text(angle = 90))
-
-graph_O2022_taxa
-
-##### plot taxa ####
-
-
-plot_bar(field_samplesR, fill="Phylum")
-
-BiocManager::install("MicrobiotaProcess")
-library("MicrobiotaProcess")
-
-fY2021_taxa <- get_taxadf(obj = Y2021, taxlevel=7)
-
-graph_fY2021_taxa <- ggbartax(obj = fY2021_taxa,
-                                      facetNames=factor("DOY"),
-                                      topn=24)+
-  theme(axis.text.x = element_text(angle = 90))
-
-
-graph_fY2021_taxa
-
-
-fY2022_taxa <- get_taxadf(obj = Y2022, taxlevel=7)
-
-graph_fY2022_taxa <- ggbartax(obj = fY2022_taxa,
-                              facetNames=factor("DOY"),
-                              topn=24)
-
-graph_fY2022_taxa
-
-
-
-graph_fY2022_taxa$data
-
-sample_variables(field_samplesR)
-
-DIEC_taxa <- get_taxadf(obj = DIEC, taxlevel=7)
-
-graph_DIEC_taxa <- ggbartax(obj = DIEC_taxa,
-                                      facetNames="Year",
-                                      topn=24)
-graph_DIEC_taxa
-
-# distmethod
-# "unifrac",  "wunifrac", "manhattan", "euclidean", "canberra", "bray", "kulczynski" ...(vegdist, dis
-
-
-
-pcoares <- get_pcoa(obj=field_samplesR, 
-                    distmethod="wunifrac", 
-                    method="hellinger")
-# Visulizing the result
-pcaplot1 <- ggordpoint(obj=pcoares, 
-                       biplot=FALSE, 
-                       speciesannot=FALSE,
-                       factorNames=c("DOY"), 
-                       ellipse=TRUE) 
-  #scale_color_manual(values=c("#00AED7", "#FD9347")) +
-  #scale_fill_manual(values=c("#00AED7", "#FD9347"))
-# pc = c(1, 3) to show the first and third principal components.
-pcaplot2 <- ggordpoint(obj=pcoares, 
-                       pc=c(1, 3), 
-                       biplot=FALSE, 
-                       speciesannot=FALSE,
-                       factorNames=c("DOY"), 
-                       ellipse=TRUE)
-  #scale_color_manual(values=c("#00AED7", "#FD9347")) +
-  #scale_fill_manual(values=c("#00AED7", "#FD9347"))
-pcaplot1 | pcaplot2
-
-
-#################### 
-set.seed(123)
-ig <- make_network(field_samplesR, 
-                   dist.fun="bray",
-                   max.dist=0.6)
-
-plot_network(ig, field_samplesR, 
-             color="DOY", 
-             shape="Site", 
-             line_weight=0.4, 
-             label=NULL)
 

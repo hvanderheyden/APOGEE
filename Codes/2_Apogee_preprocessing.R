@@ -49,6 +49,8 @@ saveRDS(mockRF, "R_objects/mock_RF.rds")
 
 Runs_raw <- readRDS("R_objects/Runs_raw.rds"); Runs_raw
 
+sample.variables(Runs_raw)
+
 library("tidyverse")
 taxR <- data.frame(phyloseq::tax_table(Runs_raw))
 tax.cleanR <- data.frame(row.names = row.names(taxR),
@@ -80,7 +82,7 @@ Dep1<-plot_read_distribution(Runs_raw,
                              plot.type = "histogram")+
   theme_biome_utils()+
   scale_x_continuous(trans='log10', 
-                     limits = c(200, 15000))+
+                     limits = c(200, 150000))+
   scale_fill_manual(values=c("#111111"))+ 
   geom_vline(xintercept = 3000, 
              colour = "black", 
