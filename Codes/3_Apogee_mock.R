@@ -34,7 +34,7 @@ mock_dat <- mock_dat %>%
   mutate(Species = case_when(
     Species %in% 
       predefined_species ~ Species,  # Keep valid species as is
-    TRUE ~ "other"  # Replace other species with "other"
+    TRUE ~ "Other"  # Replace other species with "other"
   ))
 
 otu_rel_abund <- mock_dat %>%
@@ -78,7 +78,7 @@ summary <- mock_abund %>%
 pivot_wider(names_from = Description, values_from = mean_rel_abund)
 
 
-write.csv(summary, "Data/mocks/summary_mock.csv", row.names=FALSE)
+#write.csv(summary, "Data/mocks/summary_mock.csv", row.names=FALSE)
 
 my_cols<- c(  
 "#8dd3c7",
@@ -92,7 +92,8 @@ my_cols<- c(
 "#d9d9d9",
 "#bc80bd",
 "#ccebc5",
-"#ffed6f")
+"#ffed6f",
+"black")
 
 # plot the stacked bar chart 
 mock_stacked<-ggplot(data=mock_abund, 
@@ -116,32 +117,95 @@ mock_stacked<-ggplot(data=mock_abund,
         legend.justification = c(0.9, -0.05))+
   theme(axis.text.x = element_text(angle = 60, 
                                    vjust = 0.5, 
-                                   hjust=0.4));mock_stacked
+                                   hjust=0.4))+
+  theme(legend.background=element_rect(fill = alpha("white", 0.1)));mock_stacked
 
-
-ggsave(file="Figures/Fig2_mock.pdf", width=6, height=6, units="in", dpi=900)
 
 ################################################
 
 # estimate weighted unifrac distance (dissimilarity)
 
-library(MicrobiotaProcess)
-  
-  mock1<- subset_samples(mock, Name =="mock")
-  
-  distm <- get_dist(mock1, distmethod ="wunifrac")
+library("MicrobiotaProcess")
+library("ggpubr")
+library("ape")
 
-  mock2<- subset_samples(mock, Name =="mock2")
-  
-  distm2 <- get_dist(mock2, distmethod ="wunifrac")
-  
-  mock3<- subset_samples(mock,Name =="mock3")
-  
-  distm3 <- get_dist(mock3, distmethod ="wunifrac")
+taxaPS <- get_taxadf(mock, 
+                     taxlevel=7,
+                     type = "species")
 
+taxaPS_tree = rtree(ntaxa(taxaPS), 
+                    rooted=TRUE, 
+                    tip.label=taxa_names(taxaPS))
+
+taxaPS_tax  = phyloseq::tax_table(taxaPS)
+taxaPS_otu = otu_table(taxaPS)
+
+meta <- read.csv("Data/mocks/meta.csv", 
+                 header=TRUE, sep=";")
+head(meta)
+
+meta <- meta %>% 
+  tibble::column_to_rownames("Sample_ID")
+
+samples = sample_data(meta)
+
+taxaPS <- phyloseq(taxaPS_tax,
+                   taxaPS_otu,
+                   samples,
+                   taxaPS_tree)
+
+
+
+###############################################
+
+mock <- subset_samples(taxaPS, Name  == "mock")
+mock2 <- subset_samples(taxaPS, Name  == "mock2")
+mock3 <- subset_samples(taxaPS, Name  == "mock3")
+
+distm <- get_dist(mock, 
+                    distmethod ="bray", 
+                    method="hellinger");distm
+
+distm2 <- get_dist(mock2, 
+                  distmethod ="bray", 
+                  method="hellinger");distm2
+
+distm3 <- get_dist(mock3, 
+                  distmethod ="bray",
+                  method="hellinger");distm3
   
-  distm
-  distm2
-  distm3
-    
-                     
+#############################
+# Get the PCOA results 
+pcoa_results <- get_pcoa(obj=taxaPS, 
+                      distmethod="bray", 
+                      method="hellinger")
+  
+# Visualizing the PCOA results
+pcoaplot1 <- ggordpoint(obj=pcoa_results, 
+                          biplot=FALSE,
+                          factorNames=c("Description"), 
+                          ellipse=FALSE,
+                          poinsize = 1.5,
+                          stroke = 0.8)+
+  xlim(-0.45, 0.45)+
+  ylim(-0.45, 0.45)+
+  theme(legend.position = c(0.8, 0.85))+
+  theme(legend.text=element_text(size=8))+
+  theme(legend.title = element_blank())+ 
+  theme(plot.title = element_blank())+
+  guides(fill = guide_legend(keywidth = 0.6, 
+                             keyheight = 0.7,
+                             ncol = 2))+
+  theme(legend.background=element_rect(fill = alpha("white", 0.1)));pcoaplot1
+
+
+
+ggarrange(ggarrange(mock_stacked,
+                    pcoaplot1,
+                    nrow = 2, labels = c("A", "B"),
+                    heights = c(2.5, 1)))
+
+ggsave(file="Figures/Fig2_mock.pdf", width=4.8, height=7.8, units="in", dpi=900)
+
+
+        

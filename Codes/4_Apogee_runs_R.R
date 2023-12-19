@@ -4,7 +4,7 @@ library("readxl")
 
 library("tibble")
 library("vegan")
-library("DESeq2") # BiocManager::install("DESeq2")
+library("DESeq2")a # BiocManager::install("DESeq2")
 library("speedyseq") # install with remotes::install_github("mikemc/speedyseq") 
 
 library("ggstar")
@@ -35,6 +35,8 @@ my_cols<- c(
            "#000000"
 )
 
+library("phyloseq") #BiocManager::install("phyloseq")
+
 Runs_PRF <- readRDS("R_objects/Runs_PRF.rds");Runs_PRF
 
 ##################################################################
@@ -44,6 +46,7 @@ Runs_PRF <- readRDS("R_objects/Runs_PRF.rds");Runs_PRF
 
 Runs_PRF_dat <- psmelt(Runs_PRF)
 
+library("forcats")
 Runs_PRF_dat$Month <- as_factor(Runs_PRF_dat$Month)
 Runs_PRF_dat$Week <- as_factor(Runs_PRF_dat$Week)
 
