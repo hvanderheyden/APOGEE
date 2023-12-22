@@ -166,6 +166,42 @@ TAX_minimap2 = phyloseq::tax_table(taxo_minimap2)
 phylo_minimap2 <- phyloseq(OTU_minimap2, TAX_minimap2)
 phylo_minimap2
 
+#######################################
+########## minimap2_filtered ##########
+#######################################
+
+
+## load the biom_table, taxonomy and metadata ####
+biom_minimap2_Q20<- read.csv("Data/mocks/minimap2_filtered_35_otu.tsv", header=TRUE, sep="\t")
+head(biom_minimap2_Q20)
+
+taxo_minimap2<- read.csv("Data/mocks/minimap2_taxo.csv", header=TRUE, sep=";")
+head(taxo_minimap2)
+
+# define the row names from the otu column ####
+
+biom_minimap2 <- biom_minimap2_Q20 %>%
+  tibble::column_to_rownames("otu") 
+
+taxo_minimap2 <- taxo_minimap2 %>%
+  tibble::column_to_rownames("otu") 
+
+# Transform into matrixes otu and tax tables (sample table can be left as data frame) ####
+
+biom_minimap2_Q20 <- as.matrix(biom_minimap2)
+taxo_minimap2 <- as.matrix(taxo_minimap2)
+
+class(taxo_minimap2)
+class(biom_minimap2_Q20)
+
+# convert to phyloseq objects ####
+OTU_minimap2_Q20 = otu_table(biom_minimap2_Q20, taxa_are_rows = TRUE)
+TAX_minimap2 = phyloseq::tax_table(taxo_minimap2)
+
+
+phylo_minimap2_Q20 <- phyloseq(OTU_minimap2_Q20, TAX_minimap2)
+phylo_minimap2_Q20
+
 ###################################
 ###########   Theoretical #########
 ###################################
@@ -214,9 +250,10 @@ tax2 = phyloseq::tax_table(phylo_kracken)
 tax3 = phyloseq::tax_table(phylo_qiime2)
 tax4  = phyloseq::tax_table(phylo_minimap2)
 tax5  = phyloseq::tax_table(phylo_theo)
+tax6 = phyloseq::tax_table(phylo_minimap2_Q20)
 
 # merge the tax tables 
-tax <- merge_phyloseq(tax1, tax2, tax3, tax4, tax5)
+tax <- merge_phyloseq(tax1, tax2, tax3, tax4, tax5, tax6)
 str(tax)
 
 head(tax)
@@ -231,16 +268,17 @@ otu2 = otu_table(phylo_kracken)
 otu3 = otu_table(phylo_qiime2)
 otu4  = otu_table(phylo_minimap2)
 otu5  = otu_table(phylo_theo)
-
+otu6  = otu_table(phylo_minimap2_Q20)
 
 # merge the otu tables 
-otu <- merge_phyloseq(otu1, otu2, otu3, otu4, otu5)
+otu <- merge_phyloseq(otu1, otu2, otu3, otu4, otu5, otu6)
 
 sample_names(phylo_bracken)
 sample_names(phylo_kracken)
 sample_names(phylo_qiime2)
 rank_names(phylo_qiime2)
 sample_names(phylo_minimap2)
+sample_names(phylo_minimap2_Q20)
 
 # concatenate the meta data into a single file and import 
 meta <- read.csv("Data/mocks/meta.csv", 

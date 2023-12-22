@@ -32,19 +32,8 @@ library("MicrobiotaProcess")
 
 # For the mock experiments, the data were first rarefied
 
-set.seed(1024)
-rareres <- get_rarecurve(obj=mock_raw, chunks=400)
-
-p_rare <- ggrarecurve(obj=rareres, factorNames="Sample_ID ",
-                      indexNames=c("Observe"),
-) +
-  theme(legend.spacing.y=unit(0.01,"cm"),
-        legend.text=element_text(size=4))
-
-
 mockR = rarefy_even_depth(mock_raw, 
                                rngseed=1024,
-                               #sample.size=10000,
                                replace=FALSE)
 
 # Because singletons still remains after rarefaction, taxa not supported with 

@@ -8,9 +8,12 @@ barcode05K;mock3;Mock;Kraken
 barcode03;mock;Mock;Qiime2
 barcode04;mock2;Mock;Qiime2
 barcode05;mock3;Mock;Qiime2
-barcode04S;mock2;Mock;Minimap2
-barcode03S;mock;Mock;Minimap2
-barcode05S;mock3;Mock;Minimap2
+barcode04M;mock2;Mock;Minimap2
+barcode03M;mock;Mock;Minimap2
+barcode05M;mock3;Mock;Minimap2
 barcode04T;mock2;Mock;Theoretical
 barcode03T;mock;Mock;Theoretical
 barcode05T;mock3;Mock;Theoretical
+barcode04MF;mock2;Mock;Minimap2_F
+barcode03MF;mock;Mock;Minimap2_F
+barcode05MF;mock3;Mock;Minimap2_F

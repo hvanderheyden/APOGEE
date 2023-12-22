@@ -46,7 +46,7 @@ otu_rel_abund <- mock_dat %>%
                names_to="level",
                values_to="taxon") %>% 
   mutate(Description = factor(Description, 
-                              levels=c("Theoretical", "Minimap2", "Bracken", "Kraken", "Qiime2")))
+                              levels=c("Theoretical", "Minimap2_F", "Minimap2", "Bracken", "Kraken", "Qiime2")))
 
 
 ###################################
@@ -205,7 +205,7 @@ ggarrange(ggarrange(mock_stacked,
                     nrow = 2, labels = c("A", "B"),
                     heights = c(2.5, 1)))
 
-ggsave(file="Figures/Fig2_mock.pdf", width=4.8, height=7.8, units="in", dpi=900)
+ggsave(file="Figures/Fig2_mock.pdf", width=5, height=8, units="in", dpi=900)
 
 
         
