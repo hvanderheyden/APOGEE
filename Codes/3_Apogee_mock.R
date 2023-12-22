@@ -189,7 +189,7 @@ pcoaplot1 <- ggordpoint(obj=pcoa_results,
                           stroke = 0.8)+
   xlim(-0.45, 0.45)+
   ylim(-0.45, 0.45)+
-  theme(legend.position = c(0.8, 0.85))+
+  theme(legend.box = "horizontal", legend.position = c(0.2, 0.85))+
   theme(legend.text=element_text(size=8))+
   theme(legend.title = element_blank())+ 
   theme(plot.title = element_blank())+

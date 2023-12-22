@@ -31,6 +31,7 @@ phyloseq::tax_table(mock_raw) <- as.matrix(tax.cleanM) ; phyloseq::tax_table(moc
 library("MicrobiotaProcess")
 
 # For the mock experiments, the data were first rarefied
+mockRF = prune_taxa(taxa_sums(mockR) > 09, mockR); mockRF
 
 mockR = rarefy_even_depth(mock_raw, 
                                rngseed=1024,
@@ -39,7 +40,7 @@ mockR = rarefy_even_depth(mock_raw,
 # Because singletons still remains after rarefaction, taxa not supported with 
 # at least 10 ASVs, were removed from the final "mock" object. 
 
-mockRF = prune_taxa(taxa_sums(mockR) > 09, mockR); mockRF
+
 
 saveRDS(mockRF, "R_objects/mock_RF.rds")
 
@@ -72,8 +73,8 @@ phyloseq::tax_table(Runs_raw) <- as.matrix(tax.cleanR) ; phyloseq::tax_table(Run
 
 # plot depth 
 
-library("microbiome")
-library("microbiomeutilities")
+library("microbiome") #BiocManager::install("microbiome")
+library("microbiomeutilities") #devtools::install_github("microsud/microbiomeutilities")
 library("ggplot2") 
 
 
@@ -84,7 +85,7 @@ Dep1<-plot_read_distribution(Runs_raw,
   scale_x_continuous(trans='log10', 
                      limits = c(200, 150000))+
   scale_fill_manual(values=c("#111111"))+ 
-  geom_vline(xintercept = 3000, 
+  geom_vline(xintercept = 5000, 
              colour = "black", 
              linetype="dashed")+
   theme(legend.position="none")+

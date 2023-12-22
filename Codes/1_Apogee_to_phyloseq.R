@@ -16,6 +16,9 @@ library("forcats")
 library(patchwork)
 library(ggpubr)
 
+
+library("tidyverse")
+library("tibble")
 #######################################################################
 ############## build the phyloseq object for the mocks ################
 #######################################################################
@@ -172,7 +175,7 @@ phylo_minimap2
 
 
 ## load the biom_table, taxonomy and metadata ####
-biom_minimap2_Q20<- read.csv("Data/mocks/minimap2_filtered_35_otu.tsv", header=TRUE, sep="\t")
+biom_minimap2_Q35<- read.csv("Data/mocks/minimap2_filtered_35_otu_mock.tsv", header=TRUE, sep="\t")
 head(biom_minimap2_Q20)
 
 taxo_minimap2<- read.csv("Data/mocks/minimap2_taxo.csv", header=TRUE, sep=";")
@@ -180,7 +183,7 @@ head(taxo_minimap2)
 
 # define the row names from the otu column ####
 
-biom_minimap2 <- biom_minimap2_Q20 %>%
+biom_minimap2_Q35 <- biom_minimap2_Q35 %>%
   tibble::column_to_rownames("otu") 
 
 taxo_minimap2 <- taxo_minimap2 %>%
@@ -188,19 +191,19 @@ taxo_minimap2 <- taxo_minimap2 %>%
 
 # Transform into matrixes otu and tax tables (sample table can be left as data frame) ####
 
-biom_minimap2_Q20 <- as.matrix(biom_minimap2)
+biom_minimap2_Q35 <- as.matrix(biom_minimap2)
 taxo_minimap2 <- as.matrix(taxo_minimap2)
 
 class(taxo_minimap2)
 class(biom_minimap2_Q20)
 
 # convert to phyloseq objects ####
-OTU_minimap2_Q20 = otu_table(biom_minimap2_Q20, taxa_are_rows = TRUE)
+OTU_minimap2_Q35 = otu_table(biom_minimap2_Q35, taxa_are_rows = TRUE)
 TAX_minimap2 = phyloseq::tax_table(taxo_minimap2)
 
 
-phylo_minimap2_Q20 <- phyloseq(OTU_minimap2_Q20, TAX_minimap2)
-phylo_minimap2_Q20
+phylo_minimap2_Q35 <- phyloseq(OTU_minimap2_Q20, TAX_minimap2)
+phylo_minimap2_Q35
 
 ###################################
 ###########   Theoretical #########
@@ -320,9 +323,9 @@ saveRDS(mock_raw, file= "R_objects/mock_raw.rds")
 
 
 ## load the biom_table, taxonomy and metadata ####
-Apogee_biom<- read.csv("Data/runs/otu_table.csv", 
+Apogee_biom<- read.csv("Data/runs/filtered_otu_run.tsv", 
                        header=TRUE, 
-                       sep=",")
+                       sep="\t")
 head(Apogee_biom)
 
 Apogee_taxo<- read.csv("Data/runs/phyloseq_taxonomy.csv", 

@@ -1,4 +1,4 @@
-Sample_ID	ID_S	Name	run_name	flowcell	barcode	Site_A	Site	Field	date	Year	Month	Week	DOY	SampleType	S_vesicarium	P_desttructor	B_squamosa	comments
+Sample_ID	ID_S	Name	run_name	flowcell	barcode	Site_A	Site	Field	date	Year	Month	Week	DOY	SampleType	S_vesicarium	P_destructor	B_squamosa	comments
 Q_17	Q_17	vanh_2022_1	VANH_2022_R1	FAS14998	17	VANH	A	SL5	2022-06-05	2022	6	24	155	Field	0	0	0	
 Q_18	Q_18	vanh_2022_2	VANH_2022_R1	FAS14998	18	VANH	A	SL5	2022-06-07	2022	6	24	157	Field	0	0	0	
 Q_19	Q_19	vanh_2022_3	VANH_2022_R1	FAS14998	19	VANH	A	SL5	2022-06-09	2022	6	24	159	Field	0	0	1	

@@ -39,6 +39,16 @@ library("phyloseq") #BiocManager::install("phyloseq")
 
 Runs_PRF <- readRDS("R_objects/Runs_PRF.rds");Runs_PRF
 
+classtaxa <- get_taxadf(obj=Runs_PRF, taxlevel=7)
+
+pclass <- ggbartax(obj=classtaxa, facetNames="SampleType", plotgroup=TRUE, topn=19) +
+  xlab(NULL) +
+  ylab("relative abundance (%)") +
+  scale_fill_manual(values=c(colorRampPalette(RColorBrewer::brewer.pal(12,"Set3"))(31))) +
+  guides(fill= guide_legend(keywidth = 0.5, keyheight = 0.5));pclass
+
+pclass$data
+
 ##################################################################
 # compute and plot stacked bar charts to sumarize by Week/Year####
 ##################################################################
